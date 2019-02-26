@@ -1,3 +1,5 @@
 javabackend/target/**
 javabackend/javabackend.iml
 javabackend/.idea/**
+.DS_Store
+javabackend/java-backend.iml
