@@ -21,6 +21,9 @@ public class SocketServerHandler extends SimpleChannelInboundHandler<Request> {
             return handleRegister((RegisterRequest) request);
 
         }
+        if (request instanceof GetAllDeviceRequest) {
+            return handleGetAllDevice((GetAllDeviceRequest) request);
+        }
         return null; // TODO: change into a default NOT_FOUND message
     }
 
@@ -31,4 +34,6 @@ public class SocketServerHandler extends SimpleChannelInboundHandler<Request> {
     private Response handleRegister(RegisterRequest request) {
         return DatabaseService.register(request);
     }
+
+    private Response handleGetAllDevice(GetAllDeviceRequest request) {return DatabaseService.getAllDevices(request);}
 }

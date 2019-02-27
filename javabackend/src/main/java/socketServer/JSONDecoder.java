@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import requests.ForwardRequest;
+import requests.GetAllDeviceRequest;
 import requests.RegisterRequest;
 import requests.Request;
 import utils.RuntimeTypeAdapterFactory;
@@ -25,7 +26,8 @@ public class JSONDecoder extends MessageToMessageDecoder<String> {
         RuntimeTypeAdapterFactory<Request> rttaf = RuntimeTypeAdapterFactory.of(Request.class)
                 // RegisterRequest inheriting types and the values per type field
                 .registerSubtype(ForwardRequest.class, "Forward")
-                .registerSubtype(RegisterRequest.class, "Register");
+                .registerSubtype(RegisterRequest.class, "Register")
+                .registerSubtype(GetAllDeviceRequest.class, "GetAll");
         Gson gson = new GsonBuilder().setPrettyPrinting()
                 .registerTypeAdapterFactory(rttaf)
                 .create();

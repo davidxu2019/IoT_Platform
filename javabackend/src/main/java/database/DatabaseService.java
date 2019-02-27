@@ -1,12 +1,15 @@
 package database;
 
+import com.mongodb.Block;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import requests.ForwardRequest;
+import requests.GetAllDeviceRequest;
 import requests.RegisterRequest;
 import responses.ForwardResponse;
+import responses.GetAllDeviceResponse;
 import responses.RegisterResponse;
 import responses.Response;
 
@@ -35,7 +38,7 @@ public class DatabaseService {
     /**
      * Database operation that handles register request.
      * database scheme
-     *     Devices: username, nickname, IP
+     *     Devices: username, deviceName, IP
      * @param request: the RegisterRequest Object
      * @return Response object
      */
@@ -81,6 +84,38 @@ public class DatabaseService {
         MongoDatabase database = client.getDatabase("Devices");
         MongoCollection<Document> devices = database.getCollection("Devices");
         return devices.find(and(eq("username", user), eq("deviceName", deviceName))).first() != null;
+    }
+
+    /**
+     * Database operation that handles register request.
+     * database scheme
+     *     Devices: username, deviceName, IP
+     * @param request
+     * @return
+     */
+    public static Response getAllDevices(GetAllDeviceRequest request) {
+        MongoDatabase database = client.getDatabase("Devices");
+        MongoCollection<Document> devices = database.getCollection("Devices");
+
+        final List<GetAllDeviceResponse.Device> userDevices = new ArrayList<>();
+        Block<Document> addBlock = new Block<Document>() {
+            @Override
+            public void apply(final Document document) {
+                String deviceName = document.get("deviceName").toString();
+                String deviceIp = document.get("IP").toString();
+                GetAllDeviceResponse.Device device = new GetAllDeviceResponse.Device(deviceName, request.user(), deviceIp);
+                userDevices.add(device);
+            }
+        };
+        devices.find(and(eq("username", request.user()))).forEach(addBlock); // TODO: deprecated method?
+
+        GetAllDeviceResponse.Device[] userDeviceArray = new GetAllDeviceResponse.Device[userDevices.size()];
+        int i = 0;
+        for (GetAllDeviceResponse.Device device: userDevices) {
+            userDeviceArray[i] = device;
+            i++;
+        }
+        return new GetAllDeviceResponse(userDeviceArray);
     }
 
 }
