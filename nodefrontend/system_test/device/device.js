@@ -16,12 +16,12 @@ app.post('/exchangePublicKey', function(req, res) {
     res.send(JSON.stringify({'publicKey': fs.readFileSync('cert.pem').toString('utf-8')}));
 });
 
-app.post('/info', function(req, res) {
-    let receivedMsg = encryptAndDecrypt.decryptStringWithRsaPrivateKey(req.body.msg, 'key.pem');
+app.post('/mes', function(req, res) {
+    let receivedMsg = encryptAndDecrypt.decryptStringWithRsaPrivateKey(req.body.command, 'key.pem');
     console.log('instruction is:', receivedMsg);
     let msg = {'temperature': 70, 'moisture': '10%'};
     let encryptedMsg = encryptAndDecrypt.encryptStringWithRsaPublicKey(JSON.stringify(msg), 'appPublicKey.pem');
-    res.send(JSON.stringify({'info': encryptedMsg}));
+    res.send(JSON.stringify({'mes': encryptedMsg}));
 });
 
 /*
@@ -33,7 +33,7 @@ var options = {
     passphrase: "passphrase",
     requestCert: true, 
     rejectUnauthorized: true,
-    ca: [ fs.readFileSync('../server/cert.pem') ] 
+    ca: [ fs.readFileSync('../../cert.pem') ] 
 }; 
 var httpsServer = https.createServer(options, app);
 
