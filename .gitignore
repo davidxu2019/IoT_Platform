@@ -1,2 +1,3 @@
 nodefrontend/node_modules/**
 **/.DS_Store
+nodefrontend/package-lock.json

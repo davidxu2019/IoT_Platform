@@ -16,18 +16,19 @@ let usersRouter = require('./routes/users');
 let apiRouter = require('./routes/api');
 let identityRouter = require('./routes/identity');
 let communicationRouter = require('./routes/communication');
+let exchangePublicKeyRouter = require('./routes/exchangePublicKeyRouter/exchangePublicKey');
 
 let app = express();
 
-// variable
-let options = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem'),
-  passphrase: "passphrase",
-  requestCert: true,
-  rejectUnauthorized: true,
-  // ca: [ fs.readFileSync('../client/cert.pem') ]
-};
+// // variable
+// let options = {
+//   key: fs.readFileSync('key.pem'),
+//   cert: fs.readFileSync('cert.pem'),
+//   passphrase: "passphrase",
+//   requestCert: true,
+//   rejectUnauthorized: true,
+//   // ca: [ fs.readFileSync('../client/cert.pem') ]
+// };
 
 
 // view engine setup
@@ -59,6 +60,7 @@ app.use('/users', usersRouter);
 app.use('/identity', identityRouter);
 app.use('/commu', communicationRouter);
 app.use('/api', apiRouter);
+app.use('/exchangePublicKey', exchangePublicKeyRouter);
 
 
 // catch 404 and forward to error handler
@@ -77,8 +79,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-var httpsServer = https.createServer(options, app);
-httpsServer.listen(4433);
+// var httpsServer = https.createServer(options, app);
+// httpsServer.listen(4433);
 
 
 module.exports = app;
