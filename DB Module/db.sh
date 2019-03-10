@@ -1,15 +1,15 @@
 use IoTPlatform;
 db.createCollection("Users");
 db.createCollection("Devices");
-db.createCollection("BindingTable");
+db.createCollection("Bindings");
 db.Users.insert([
 	{ "username": "admin", "password": "cs219" },
 	{ "username": "user1", "password": "password" }   
 ]);
 db.Devices.insert([
-	{ "deviceid": "1user1", "IP":"192.168.0.1" }
+	{ "deviceID": "1user1", "IP":"127.0.0.1", "port": "4444" }
 ]);
-db.BindingTable.insert([
-	{ "username": "admin", "deviceid": "1user1"},
-	{ "username": "user1", "deviceid": "1user1"}
+db.Bindings.insert([
+	{ "username": "admin", "deviceID": "1user1"},
+	{ "username": "user1", "deviceID": "1user1"}
 ]);
