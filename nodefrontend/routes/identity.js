@@ -8,10 +8,10 @@ const assert = require('assert');
 /* GET home page. */
 
 router.post('/signup', function(req, res, next) {
-    var username = req.body.username;
-    var password = req.body.password;
-    var dbo = req.db;
-    query =
+    // var username = req.body.username;
+    // var password = req.body.password;
+    // var dbo = req.db;
+    // query =
 
 });
 
