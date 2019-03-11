@@ -1,58 +1,78 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
+let jwt = require('jsonwebtoken');
+
 const bcrypt = require('bcrypt');
-var jwt = require('jsonwebtoken');
 const assert = require('assert');
+const saltRounds = 10;
 
 
 /* GET home page. */
 
 router.post('/signup', function(req, res, next) {
-    // var username = req.body.username;
-    // var password = req.body.password;
-    // var dbo = req.db;
-    // query =
-
+    let username = req.body.username;
+    let password = req.body.password;
+    let dbo = req.db;
+    let query = {"username": username};
+    dbo.collection("Users").find(query).toArray(function (err, users) {
+        assert.equal(null, err);
+        if(users.length>=1){
+            console.log("user has been registered");
+            res.status(404).json({mes:"user has been registered"});
+        }
+        else{
+            bcrypt.hash(password, saltRounds, function(err, hash){
+                query = {"username": username,
+                    "password": hash};
+                dbo.collection('Users').insertOne(query,function(err, result){
+                    if (err) throw err;
+                    console.log("user successfully registered");
+                    res.status(200).json({mes:"user successfully registered"});
+                });
+            });
+        }
+    })
 });
 
 router.post('/login', function(req, res, next) {
-    var username = req.body.username;
-    var password = req.body.password;
-    var dbo = req.db;
-    query = {"username": username};
+    let username = req.body.username;
+    let password = req.body.password;
+    let dbo = req.db;
+    let query = {"username": username};
+    let time = Math.floor(Date.now()/1000);
+
     dbo.collection("Users").find(query).toArray(function (err, dbpassword) {
         assert.equal(null, err);
         if(dbpassword.length==1){
             bcrypt.compare(password, dbpassword[0].password, function(err, result){
                 if(result==true){
                     var payload = {
-                        "exp": Math.floor(Date.now() / 1000) + (2*60*60),
-                        "usr": username
+                        "exp": time + (2*60*60),
+                        "usr": username,
+                        "iat": time
                     };
                     var secretKey = "C-UFRaksvPKhx1txJYFcut3QGxsafPmwCY6SCly3G6c";
                     var token = jwt.sign(payload, secretKey);
-                    res.cookie('jwt', token);
-                    if (typeof req.body.redirect == 'undefined'|| req.body.redirect == "") {
-                        res.status(200).send("authentication succeed");
-                    }
-                    else {
-                        res.redirect(req.body.redirect);
-                    }
+
+                    dbo.collection('Users').updateOne(query, {$set: {iat: time}}, function (err, r) {
+                        assert.equal(null, err);
+                        assert.equal(1, r.matchedCount);
+                        assert.equal(1, r.modifiedCount);
+
+                        res.cookie('jwt', token);
+                        res.status(200).json({mes:"authentication succeeded"});
+                    });
                 }
                 else{
-                    console.log("password failed");
-                    res.status(401);
-                    res.render('login', {
-                        redirect: req.body.redirect
-                    });
+                    console.log("password not correct");
+                    res.status(401).json({mes:"password not correct"});
+
                 }
             })
         }
         else{
-            res.status(401);
-            res.render('login', {
-                redirect: req.body.redirect
-            });
+            console.log("user doesn't exist");
+            res.status(401).json({mes:"user doesn't exist"});
         }
     });
 });
