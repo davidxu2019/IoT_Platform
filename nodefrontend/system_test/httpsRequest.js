@@ -3,10 +3,7 @@ var https = require('https');
 function httpsRequest(params, postData) {
     return new Promise(function(resolve, reject) {
         var req = https.request(params, function(res) {
-            // reject on bad status
-            if (res.statusCode < 200 || res.statusCode >= 300) {
-                return reject(new Error('statusCode=' + res.statusCode));
-            }
+            let hasError = (res.statusCode < 200 || res.statusCode >= 300);
             // cumulate data
             var body = [];
             res.on('data', function(chunk) {
@@ -15,11 +12,23 @@ function httpsRequest(params, postData) {
             // resolve on end
             res.on('end', function() {
                 try {
-                    body = JSON.parse(Buffer.concat(body).toString());
+                    bodyObject = JSON.parse(Buffer.concat(body).toString());
                 } catch(e) {
                     reject(e);
                 }
-                resolve(body);
+                if (hasError) {
+                    reject(new Error('status code: ' + res.statusCode + '\n' + body.toString('utf-8'))); 
+                } else {
+                    if (res.headers['set-cookie']) {
+                        let cookies = {};
+                        res.headers['set-cookie'].forEach(function(cookieStr) {
+                            Object.assign(cookies, parseCookies(cookieStr));
+                        });
+                        resolve({"cookies": cookies, "body": bodyObject});
+                    } else {
+                        resolve({"body": bodyObject});
+                    }
+                }
             });
         });
         // reject on request error
@@ -33,6 +42,17 @@ function httpsRequest(params, postData) {
         // IMPORTANT
         req.end();
     });
+}
+
+function parseCookies(rc) {
+    var list = {};
+
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+
+    return list;
 }
 
 module.exports = {
