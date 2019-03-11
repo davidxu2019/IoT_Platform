@@ -1,8 +1,6 @@
 nodefrontend/node_modules/**
 **/.DS_Store
 nodefrontend/package-lock.json
-**/cert.pem
-**/key.pem
 **/devicePublicKey.pem
 **/appPublicKey.pem
 nodefrontend/system_test/platform/**
