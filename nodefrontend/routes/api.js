@@ -1,7 +1,74 @@
 // adding library into api router
 let express = require('express');
 let router = express.Router();
+let jwt = require('jsonwebtoken');
 const assert = require('assert');
+
+
+// jwt check
+router.all('/:username', function(req, res, next) {
+    console.log("checking cookie");
+    console.log(req.cookies);
+    if(req.cookies.jwt == null){
+        console.log("unauthenticated 1!");
+        res.status(401).json({mes:"unauthenticated"});
+    }
+    else{
+        try {
+            let token = jwt.verify(req.cookies.jwt, "C-UFRaksvPKhx1txJYFcut3QGxsafPmwCY6SCly3G6c");
+            let username = token.usr;
+            let exp = token.exp * 1000;
+            let iat = token.iat;
+            let query = {"username": username};
+            let dbo = req.db;
+
+            dbo.collection("Users").find(query).toArray(function (err, user) {
+                console.log(user[0].iat);
+                if (username == req.params.username && exp > Date.now() && iat == user[0].iat) {
+                    next();
+                }
+                else {
+                    console.log("unauthenticated 2!");
+                    res.status(401).json({mes:"unauthenticated"});
+                }
+            });
+
+        }catch(err){
+            console.log(err);
+            res.status(401).send(err);
+        }
+    }
+});
+
+router.all('/:username/:deviceID', function(req, res, next) {
+    console.log("checking cookie");
+    console.log(req.cookies);
+    if(req.cookies.jwt == null){
+        res.status(401).json({mes:"unauthenticated"});
+    }
+    else{
+        try {
+            let token = jwt.verify(req.cookies.jwt, "C-UFRaksvPKhx1txJYFcut3QGxsafPmwCY6SCly3G6c");
+            let username = token.usr;
+            let exp = token.exp * 1000;
+            let iat = token.iat;
+            let query = {"username": username};
+            let dbo = req.db;
+            dbo.collection("Users").find(query).toArray(function (err, user) {
+                if (username == req.params.username && exp > Date.now() && iat == user[0].iat) {
+                    next();
+                }
+                else {
+                    console.log("unauthenticated 2!");
+                    res.status(401).json({mes:"unauthenticated"});
+                }
+            });
+        }catch(err){
+            res.status(401).send(err);
+        }
+    }
+});
+
 
 // getAll api
 router.get('/:username', function(req, res, next) {
@@ -10,7 +77,7 @@ router.get('/:username', function(req, res, next) {
 
     let dbo = req.db;
     let query = {"username": username};
-    dbo.collection("Bindings").find(query).toArray(function (err, devices) {
+    dbo.collection("Bindings").find(query, function (err, devices) {
         assert.equal(null, err);
         console.log("below are the query results for \"username\"")
         console.log(devices);
@@ -19,10 +86,10 @@ router.get('/:username', function(req, res, next) {
 });
 
 // get certain "device" under certain "username"
-router.get('/:username/:id', function(req, res, next) {
+router.get('/:username/:deviceID', function(req, res, next) {
     console.log("you have entering get api");
     let username  = req.params.username;
-    let deviceID = req.params.id;
+    let deviceID = req.params.deviceID;
 
     let dbo = req.db;
     let query = {$and:[{"username":username},
@@ -36,14 +103,14 @@ router.get('/:username/:id', function(req, res, next) {
             res.status(404).json(device);
         }
         else{
-            console.log("post has been found");
+            console.log("device has been found");
             res.status(200).json(device);
         }
     });
 });
 
 // bind "device" with "username", if "device" has been bound, return 400
-router.post('/:username/:id', function(req, res, next) {
+router.post('/:username/:deviceID', function(req, res, next) {
     console.log("you have entering deviceBinding api")
     if(req.body.deviceName == null){
         console.log("No embedded deviceName in request");
@@ -51,7 +118,7 @@ router.post('/:username/:id', function(req, res, next) {
     }
     else {
         let username = req.params.username;
-        let deviceID = req.params.id;
+        let deviceID = req.params.deviceID;
         let deviceName = req.body.deviceName
 
         // check whether this device has been binding or not

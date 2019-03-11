@@ -2,7 +2,37 @@
 let express = require('express');
 let router = express.Router();
 let http = require('http');
+let jwt = require('jsonwebtoken');
 const assert = require('assert');
+
+router.all('/:username/:deviceID', function(req, res, next) {
+    console.log("checking cookie");
+    console.log(req.cookies);
+    if(req.cookies.jwt == null){
+        res.status(401).json({mes:"unauthenticated"});
+    }
+    else{
+        try {
+            let token = jwt.verify(req.cookies.jwt, "C-UFRaksvPKhx1txJYFcut3QGxsafPmwCY6SCly3G6c");
+            let username = token.usr;
+            let exp = token.exp * 1000;
+            let iat = token.iat;
+            let query = {"username": username};
+            let dbo = req.db;
+            dbo.collection("Users").find(query).toArray(function (err, user) {
+                if (username == req.params.username && exp > Date.now() && iat == user[0].iat) {
+                    next();
+                }
+                else {
+                    console.log("unauthenticated 2!");
+                    res.status(401).json({mes:"unauthenticated"});
+                }
+            });
+        }catch(err){
+            res.status(401).send(err);
+        }
+    }
+});
 
 router.post('/:username/:deviceID', function(req, res, next) {
     console.log("you have entering dataForwarding api");
