@@ -34,8 +34,8 @@ router.all('/:username/:deviceID', function(req, res, next) {
     }
 });
 
-router.post('/:username/:deviceID', function(req, res, next) {
-    console.log("you have entering dataForwarding api");
+router.post('AD/:username/:deviceID', function(req, res, next) {
+    console.log("you have entering application to device dataForwarding api");
     if (req.body.command == null) {
         console.log("No embedded command in request");
         res.status(400).json({mes:"No embedded command in request"});
@@ -71,6 +71,54 @@ router.post('/:username/:deviceID', function(req, res, next) {
                     .then(function(msg) {
                         res.send(JSON.stringify(msg));
                     });
+                });
+            }
+        });
+    }
+});
+
+
+/**********************************************
+ * ********************************************
+ * lao ma remembers to test below block! ******
+ * ********************************************
+ *  *******************************************/
+
+router.post('DD/:fromDeviceID/:toDeviceID', function(req, res, next) {
+    console.log("you have entering device to device dataForwarding api");
+    if(req.body.command == null){
+        console.log("No embedded command in request");
+        res.status(400).json({mes:"No embedded command in request"});
+    }
+    else{
+        let fromDeviceID  = req.params.fromDeviceID;
+        let toDeviceID = req.params.toDeviceID;
+        let command  = req.body.command;
+
+        // check if this user has the authority to interact with device
+        let dbo = req.db;
+        let query = {$or:[{"deviceID1":fromDeviceID, "deviceID2": toDeviceID},
+                {"deviceID1":toDeviceID, "deviceID2": fromDeviceID}]};
+        dbo.collection("Connections").find(query).toArray(function(err, connection){
+            assert.equal(null, err);
+            if(connection.length==0){
+                console.log("Sorry, ${fromDeviceID} doesn't have the authority to interact with this device or this device doesn't exist");
+                res.status(400).json({mes:"Sorry, ${fromDeviceID} doesn't have the authority to interact with this device or this device doesn't exist"});
+            }
+            else{
+                // find ip and port
+                query = {"deviceID": toDeviceID};
+                dbo.collection("Devices").find(query).toArray(function(err, device){
+                    assert.equal(null, err);
+                    let IP = device[0].IP;
+                    let port = device[0].port;
+                    let postData = JSON.stringify({
+                        "command": command
+                    });
+                    forwardRequestForInfo(IP, port, postData)
+                        .then(function(msg) {
+                            res.send(JSON.stringify(msg));
+                        });
                 });
             }
         });

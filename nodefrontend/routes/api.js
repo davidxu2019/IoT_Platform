@@ -160,4 +160,59 @@ router.post('/:username/:deviceID', function(req, res, next) {
     }
 });
 
+// bind "device" with "device", if both "devices" have already been bound with each other, return 400
+router.post('/:username/:fromDeviceID/:toDeviceID', function(req, res, next) {
+    console.log("you have entering device-device Binding api")
+    if(req.body.connectionName == null){
+        console.log("No embedded connectionName in request");
+        res.status(400).json({mes:"No embedded connectionName in request"});
+    }
+    else {
+        let username = req.params.username;
+        let fromDeviceID = req.params.fromDeviceID;
+        let toDeviceID = req.params.toDeviceID;
+        let connectionName = req.body.connectionName;
+
+        // check whether both of these two devices have been bound with username or not
+        let dbo = req.db;
+        let query = {$or:[{"deviceID":fromDeviceID, "username": username},
+                {"deviceID":toDeviceID, "username": username}]};
+        dbo.collection("Bindings").find(query).toArray(function (err, devices) {
+            assert.equal(null, err);
+            if (devices.length<2){
+                console.log("device(s) may not exist or haven't bound with this user");
+                res.status(404).json({mes:"device(s) may not exist or haven't bound with this user"});
+            }
+            else{
+                // check such D to D connection has existed or not
+                query = {$or:[{"deviceID1":fromDeviceID, "deviceID2": toDeviceID},
+                        {"deviceID1":toDeviceID, "deviceID2": fromDeviceID}]};
+                dbo.collection('Connections').find(query).toArray(function (err, connection) {
+                    assert.equal(null, err);
+                    if(connection.length>0){
+                        console.log("such connection has already existed");
+                        res.status(404).json({mes:"such connection has already existed"});
+                    }
+                    else{
+                        // insert new document for user-device binding
+                        let doc = {
+                            deviceID1: fromDeviceID,
+                            deviceID2: toDeviceID,
+                            username: username,
+                            connectionName: connectionName
+                        };
+
+                        dbo.collection('Connections').insertOne(doc, function (err, r) {
+                            assert.equal(null, err);
+                            assert.equal(1, r.insertedCount);
+                            console.log("successfully insert new device-device binding");
+                            res.status(201).json({mes:"successfully insert new device-device binding"});
+                        });
+                    }
+                });
+            }
+        });
+    }
+});
+
 module.exports = router;
