@@ -4,3 +4,5 @@ nodefrontend/package-lock.json
 **/devicePublicKey.pem
 **/appPublicKey.pem
 nodefrontend/system_test/platform/**
+.idea/**
+.DS_Store
