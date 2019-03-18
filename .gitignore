@@ -1,4 +1,4 @@
-nodefrontend/node_modules/**
+**/node_modules/**
 **/.DS_Store
 nodefrontend/package-lock.json
 **/devicePublicKey.pem
