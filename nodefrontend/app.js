@@ -17,6 +17,7 @@ let apiRouter = require('./routes/api');
 let identityRouter = require('./routes/identity');
 let communicationRouter = require('./routes/communication');
 let exchangePublicKeyRouter = require('./routes/exchangePublicKeyRouter/exchangePublicKey');
+let heartbeatRouter = require('./routes/heartbeat');
 
 let app = express();
 
@@ -75,6 +76,7 @@ app.use('/identity', identityRouter);
 app.use('/commu', communicationRouter);
 app.use('/api', apiRouter);
 app.use('/exchangePublicKey', exchangePublicKeyRouter);
+app.use('/heartbeat', heartbeatRouter);
 
 
 // catch 404 and forward to error handler

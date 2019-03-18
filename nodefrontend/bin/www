@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('nodefrontend:server');
 var https = require('https');
+var request = require('request');
 var fs = require('fs'); 
 
 /**
@@ -15,6 +16,9 @@ var fs = require('fs');
 
 var port = normalizePort(process.env.PORT || '8433');
 app.set('port', port);
+
+var masterURL = 'https://localhost:5433';
+var registerToMasterRoute = '/register';
 
 /**
  * Create HTTP server.
@@ -30,6 +34,25 @@ var options = {
 }; 
 var server = https.createServer(options, app);
 server.listen(port);
+
+function registerToMaster() {
+  let options = { 
+    url: masterURL + registerToMasterRoute,
+    method: 'POST', 
+    json: true,
+    key: fs.readFileSync('key.pem'),  
+    cert: fs.readFileSync('cert.pem'), 
+    passphrase: "passphrase",
+    ca: [ fs.readFileSync('../loadbalancer/cert.pem') ], // master cert
+  }; 
+  request(options, function(err, res, body) {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Registered");
+    }
+  }); 
+}
 
 /**
  * Listen on provided port, on all network interfaces.
