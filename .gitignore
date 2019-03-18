@@ -1,6 +1,6 @@
 **/node_modules/**
 **/.DS_Store
-nodefrontend/package-lock.json
+**/package-lock.json
 **/devicePublicKey.pem
 **/appPublicKey.pem
 nodefrontend/system_test/platform/**
