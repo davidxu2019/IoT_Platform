@@ -24,18 +24,6 @@ router.get('/', function(req,res) {
         res.send(JSON.stringify(msg));
     });
 });
-
-router.post('/forward', function(req, res) {
-    console.log("received");
-    let postData = JSON.stringify({
-       "msg": req.body.msg
-    });
-    forwardRequestForInfo(req.query.deviceId, postData)
-    .then(function(msg) {
-        res.send(JSON.stringify(msg));
-    });
-});
-
 /*
 Helper functions
 */
@@ -59,10 +47,10 @@ function sendPublicKeyToDevice(buffer, deviceId) {
         port: 4444, 
         path: '/exchangePublicKey', 
         method: 'POST', 
-        key: fs.readFileSync('key.pem'), 
-        cert: fs.readFileSync('cert.pem'), 
+        key: fs.readFileSync('../certs/key.pem'), 
+        cert: fs.readFileSync('../certs/cert.pem'), 
         passphrase: "passphrase",
-        ca: [ fs.readFileSync('system_test/device/cert.pem') ],
+        ca: [ fs.readFileSync('../certs/cert.pem') ],
         headers: {
            'Content-Type': 'application/json',
            'Content-Length': postData.length
@@ -71,24 +59,6 @@ function sendPublicKeyToDevice(buffer, deviceId) {
         agent: new https.Agent({ 
             maxCachedSessions: 0
         }),
-    }; 
-    return httpsRequest.sendRequest(options, postData);
-}
-
-function forwardRequestForInfo(deviceId, postData) {
-    let options = { 
-        hostname: getIp(deviceId),
-        port: 4444, 
-        path: '/info', 
-        method: 'POST', 
-        key: fs.readFileSync('key.pem'), 
-        cert: fs.readFileSync('cert.pem'), 
-        passphrase: "passphrase",
-        ca: [ fs.readFileSync('../device/cert.pem') ],
-        headers: {
-           'Content-Type': 'application/json',
-           'Content-Length': postData.length
-        },
     }; 
     return httpsRequest.sendRequest(options, postData);
 }
