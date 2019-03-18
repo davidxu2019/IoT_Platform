@@ -34,7 +34,7 @@ router.all('/:username/:deviceID', function(req, res, next) {
     }
 });
 
-router.post('AD/:username/:deviceID', function(req, res, next) {
+router.post('/AD/:username/:deviceID', function(req, res, next) {
     console.log("you have entering application to device dataForwarding api");
     if (req.body.command == null) {
         console.log("No embedded command in request");
@@ -84,7 +84,7 @@ router.post('AD/:username/:deviceID', function(req, res, next) {
  * ********************************************
  *  *******************************************/
 
-router.post('DD/:fromDeviceID/:toDeviceID', function(req, res, next) {
+router.post('/DD/:fromDeviceID/:toDeviceID', function(req, res, next) {
     console.log("you have entering device to device dataForwarding api");
     if(req.body.command == null){
         console.log("No embedded command in request");

@@ -34,7 +34,7 @@ async function testForwardingData() {
 
 testForwardingData()
 .then(function(data) {
-    console.log(encryptAndDecrypt.decryptStringWithRsaPrivateKey(data.body.mes, 'key.pem'));
+    console.log(encryptAndDecrypt.decryptStringWithRsaPrivateKey(data.body.mes, '../../../certs/key.pem'));
 })
 
 /*
@@ -51,10 +51,10 @@ function signup(username, password) {
         port: 8433, 
         path: '/identity/signup', 
         method: 'POST', 
-        key: fs.readFileSync('key.pem'), 
-        cert: fs.readFileSync('cert.pem'), 
+        key: fs.readFileSync('../../../certs/key.pem'), 
+        cert: fs.readFileSync('../../../certs/cert.pem'), 
         passphrase: "passphrase",
-        ca: [ fs.readFileSync('../../cert.pem') ],
+        ca: [ fs.readFileSync('../../../certs/cert.pem') ],
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': postData.length
@@ -73,10 +73,10 @@ function login(username, password) {
         port: 8433, 
         path: '/identity/login', 
         method: 'POST', 
-        key: fs.readFileSync('key.pem'), 
-        cert: fs.readFileSync('cert.pem'), 
+        key: fs.readFileSync('../../../certs/key.pem'), 
+        cert: fs.readFileSync('../../../certs/cert.pem'), 
         passphrase: "passphrase",
-        ca: [ fs.readFileSync('../../cert.pem') ],
+        ca: [ fs.readFileSync('../../../certs/cert.pem') ],
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': postData.length
@@ -91,10 +91,10 @@ function exchangePublicKey(jwt) {
         port: 8433, 
         path: '/exchangePublicKey', 
         method: 'GET', 
-        key: fs.readFileSync('key.pem'), 
-        cert: fs.readFileSync('cert.pem'), 
+        key: fs.readFileSync('../../../certs/key.pem'), 
+        cert: fs.readFileSync('../../../certs/cert.pem'), 
         passphrase: "passphrase",
-        ca: [ fs.readFileSync('../../cert.pem') ],
+        ca: [ fs.readFileSync('../../../certs/cert.pem') ],
         headers: {
             'Cookie': 'jwt=' + jwt,
         }
@@ -109,12 +109,12 @@ function sendQuery(jwt, username, deviceID, command) {
     let options = { 
         hostname: 'localhost',
         port: 8433, 
-        path: '/commu/' + username + '/' + deviceID, 
+        path: '/commu/AD/' + username + '/' + deviceID, 
         method: 'POST', 
-        key: fs.readFileSync('key.pem'), 
-        cert: fs.readFileSync('cert.pem'), 
+        key: fs.readFileSync('../../../certs/key.pem'), 
+        cert: fs.readFileSync('../../../certs/cert.pem'), 
         passphrase: "passphrase",
-        ca: [ fs.readFileSync('../../cert.pem') ],
+        ca: [ fs.readFileSync('../../../certs/cert.pem') ],
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': postData.length,
