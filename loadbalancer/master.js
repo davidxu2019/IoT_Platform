@@ -2,6 +2,7 @@ var fs = require('fs');
 var express = require('express');
 var heartbeat = require('./heartbeat');
 var https = require('https');
+var os = require('os');
 
 var app = express();
 var bodyParser = require('body-parser');
@@ -11,28 +12,31 @@ app.use(bodyParser.json());
 /**
 properties
 */
-var slaves = ['https://localhost:8433'];
-// var slaves = [];
+var slaves = [];
 
 /**
 send heartbeats to all slaves
 */
 
-setInterval(function() {
-	heartbeat.broadcastHeartBeats(slaves);
-}, 5*1000);
+// setInterval(function() {
+// 	heartbeat.broadcastHeartBeats(slaves);
+// }, 5*1000);
 
 /**
 routes
 */
 app.post('/register', function(req, res) {
-	let serverIp = 'https://' + req.ip + ':8433';
-	console.log(serverIp);
-	if (slaves.indexOf(serverIp) == -1) {
-		heartbeat.addSlaveAndNotifyLoadBalancer(serverIp, slaves);
-		res.json({'mes': serverIp + ' is registered'});
+	if (!req.query.hostname) {
+		console.log('here');
+		res.status(404).json({'mes': 'no hostname provided'});
+		return;
+	}
+	let serverURL = 'https://' + req.query.hostname + ':8433';
+	if (slaves.indexOf(serverURL) == -1) {
+		heartbeat.addSlaveAndNotifyLoadBalancer(serverURL, slaves);
+		res.json({'mes': serverURL + ' is registered'});
 	} else {
-		res.json({'mes': serverIp + ' has been registered before'});
+		res.json({'mes': serverURL + ' has been registered before'});
 	}
 })
 
@@ -50,11 +54,13 @@ var options = {
     passphrase: "passphrase",
     requestCert: true, 
     rejectUnauthorized: true,
-    ca: [ fs.readFileSync('../nodefrontend/cert.pem') ] // slaves' cert
+    ca: [ 
+    	fs.readFileSync('../nodefrontend/cert.pem'),  // slaves' cert
+    ] 
 }; 
 console.log('HEY');
 var httpsServer = https.createServer(options, app);
-httpsServer.listen(5433, '127.0.0.1');
+httpsServer.listen(5433);
 
 /**
 Helper functions

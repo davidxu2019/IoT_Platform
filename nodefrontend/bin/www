@@ -17,8 +17,16 @@ var fs = require('fs');
 var port = normalizePort(process.env.PORT || '8433');
 app.set('port', port);
 
-var masterURL = 'https://localhost:5433';
+var masterURL = 'https://cs219iotplatform.dynu.net:5433';
 var registerToMasterRoute = '/register';
+var highLevelDomain = '.dynu.net';
+var curHostname = process.argv[2];
+
+// exit if hostname of the server is not specified.
+if (!curHostname) {
+  console.error('Please specify the hostname for this slave');
+  process.exit(1);
+}
 
 /**
  * Create HTTP server.
@@ -30,10 +38,13 @@ var options = {
     passphrase: "passphrase",
     requestCert: true, 
     rejectUnauthorized: true,
-    ca: [ fs.readFileSync('system_test/application/cert.pem') ] 
+    ca: [ 
+      // fs.readFileSync('system_test/application/cert.pem'),
+      fs.readFileSync('../loadbalancer/cert.pem'),
+    ],
 }; 
 var server = https.createServer(options, app);
-server.listen(port);
+server.listen(port, registerToMaster);
 
 function registerToMaster() {
   let options = { 
@@ -43,13 +54,19 @@ function registerToMaster() {
     key: fs.readFileSync('key.pem'),  
     cert: fs.readFileSync('cert.pem'), 
     passphrase: "passphrase",
-    ca: [ fs.readFileSync('../loadbalancer/cert.pem') ], // master cert
+    ca: [ 
+      fs.readFileSync('../loadbalancer/cert.pem') // master cert
+    ], 
+    qs: {'hostname': curHostname + highLevelDomain},
   }; 
   request(options, function(err, res, body) {
     if (err) {
       console.log(err);
+    } else if (res.statusCode >= 300) {
+      console.log('status code is ' + res.statusCode);
+      console.log(body);
     } else {
-      console.log("Registered");
+      console.log(body);
     }
   }); 
 }

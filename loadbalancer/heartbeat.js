@@ -6,7 +6,7 @@ var util = require('util');
 
 var heartbeatRoute = '/heartbeat';
 var loadBalancerServerChangeRoute = '/serversChange';
-var loadBalancerURL = 'https://localhost:4433';
+var loadBalancerURL = 'https://cs219iotplatform.dynu.net:4433';
 
 
 /**
@@ -61,6 +61,7 @@ function removeSlaveAndNotifyLoadBalancer(ip, slaves) {
 }
 
 function notifyLoadBalancer(newServers, removeServers) {
+  console.log(loadBalancerURL + loadBalancerServerChangeRoute);
 	let options = { 
     url: loadBalancerURL + loadBalancerServerChangeRoute,
     method: 'POST', 
@@ -69,12 +70,18 @@ function notifyLoadBalancer(newServers, removeServers) {
     	'removeServers': removeServers
     },
     json: true,
-    key: fs.readFileSync('key.pem'),  // key and cert has to be the same as that in `../nodefrontend/system_test/application/key.pem`
+    key: fs.readFileSync('key.pem'),
     cert: fs.readFileSync('cert.pem'), 
     passphrase: "passphrase",
     ca: [ fs.readFileSync('cert.pem') ], // cert for loadBalancer
   }; 
-	request(options); // TODO: handle response from loadbalancer
+	request(options, function(err, res, body) {
+    if (err) {
+      console.log(err);  
+    } else {
+      console.log(body);
+    }
+  }); // TODO: handle response from loadbalancer
 }
 
 async function sendRequest(url) {

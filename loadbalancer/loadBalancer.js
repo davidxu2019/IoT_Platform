@@ -43,6 +43,7 @@ app.post('/serversChange', parser, jsonParser, function(req, res) {
 
 app.all('*', function(req, res) {
   let ip = serverManagement.getServer(req);
+  console.log(ip);
   console.log('LoadBalancer:' + 'received route "' + req.url + '"');
   let options = { 
     url: ip + req.url, 
@@ -63,12 +64,15 @@ app.all('*', function(req, res) {
  */
 
 var options = { 
-    key: fs.readFileSync('../nodefrontend/system_test/application/key.pem'), 
-    cert: fs.readFileSync('../nodefrontend/system_test/application/cert.pem'), 
+    key: fs.readFileSync('key.pem'), 
+    cert: fs.readFileSync('cert.pem'), 
     passphrase: "passphrase",
     requestCert: true, 
     rejectUnauthorized: true,
-    ca: [ fs.readFileSync('../nodefrontend/system_test/application/cert.pem') ] 
+    ca: [ 
+      // fs.readFileSync('../nodefrontend/system_test/application/cert.pem'),
+      fs.readFileSync('cert.pem')
+    ], 
 }; 
 var server = https.createServer(options, app);
 server.listen(port);
