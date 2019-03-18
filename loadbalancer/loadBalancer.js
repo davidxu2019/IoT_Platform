@@ -42,11 +42,15 @@ app.post('/serversChange', parser, jsonParser, function(req, res) {
 
 
 app.all('*', function(req, res) {
-  let ip = serverManagement.getServer(req);
-  console.log(ip);
+  let url = serverManagement.getServer(req);
+  if (!url) {
+    res.status(500).json({'mes': 'all servers down'});
+    return;
+  }
+  console.log(url);
   console.log('LoadBalancer:' + 'received route "' + req.url + '"');
   let options = { 
-    url: ip + req.url, 
+    url: url + req.url, 
     method: req.method, 
     key: fs.readFileSync('../certs/key.pem'), 
     cert: fs.readFileSync('../certs/cert.pem'), 
@@ -54,7 +58,11 @@ app.all('*', function(req, res) {
     ca: [ fs.readFileSync('../certs/cert.pem') ],
     qs: req.query
   }; 
-  req.pipe(request(options)).pipe(res);
+  req.pipe(request(options, function(err, slaveRes, body) {
+    if (err) {
+      res.json({'mse': err});
+    }
+  })).pipe(res);
 });
 
 
