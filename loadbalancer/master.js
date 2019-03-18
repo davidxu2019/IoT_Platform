@@ -49,16 +49,15 @@ server config
 */
 
 var options = { 
-    key: fs.readFileSync('key.pem'), 
-    cert: fs.readFileSync('cert.pem'), 
+    key: fs.readFileSync('../certs/key.pem'), 
+    cert: fs.readFileSync('../certs/cert.pem'), 
     passphrase: "passphrase",
     requestCert: true, 
     rejectUnauthorized: true,
     ca: [ 
-    	fs.readFileSync('../nodefrontend/cert.pem'),  // slaves' cert
+    	fs.readFileSync('../certs/cert.pem'),  // slaves' cert
     ] 
 }; 
-console.log('HEY');
 var httpsServer = https.createServer(options, app);
 httpsServer.listen(5433);
 

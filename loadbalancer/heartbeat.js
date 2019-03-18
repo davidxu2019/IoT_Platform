@@ -70,10 +70,10 @@ function notifyLoadBalancer(newServers, removeServers) {
     	'removeServers': removeServers
     },
     json: true,
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('cert.pem'), 
+    key: fs.readFileSync('../certs/key.pem'),
+    cert: fs.readFileSync('../certs/cert.pem'), 
     passphrase: "passphrase",
-    ca: [ fs.readFileSync('cert.pem') ], // cert for loadBalancer
+    ca: [ fs.readFileSync('../certs/cert.pem') ], // cert for loadBalancer
   }; 
 	request(options, function(err, res, body) {
     if (err) {
@@ -88,10 +88,10 @@ async function sendRequest(url) {
 	let options = { 
     url: url,
     method: 'GET', 
-    key: fs.readFileSync('key.pem'),  // key and cert has to be the same as that under `../nodefrontend/system_test/application/key.pem`
-    cert: fs.readFileSync('cert.pem'), 
+    key: fs.readFileSync('../certs/key.pem'),  // key and cert has to be the same as that under `../nodefrontend/system_test/application/key.pem`
+    cert: fs.readFileSync('../certs/cert.pem'), 
     passphrase: "passphrase",
-    ca: [ fs.readFileSync('../nodefrontend/cert.pem') ],
+    ca: [ fs.readFileSync('../certs/cert.pem') ],
   }; 
   return await requestPromise(options);
 }

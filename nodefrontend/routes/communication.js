@@ -135,10 +135,10 @@ function forwardRequestForInfo(IP, port, postData) {
         port: port, 
         path: '/mes', 
         method: 'POST', 
-        key: fs.readFileSync('key.pem'), 
-        cert: fs.readFileSync('cert.pem'), 
+        key: fs.readFileSync('../certs/key.pem'), 
+        cert: fs.readFileSync('../certs/cert.pem'), 
         passphrase: "passphrase",
-        ca: [ fs.readFileSync('system_test/device/cert.pem') ],
+        ca: [ fs.readFileSync('../certs/cert.pem') ],
         headers: {
            'Content-Type': 'application/json',
            'Content-Length': postData.length

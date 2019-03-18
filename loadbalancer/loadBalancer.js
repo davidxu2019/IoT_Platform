@@ -48,10 +48,10 @@ app.all('*', function(req, res) {
   let options = { 
     url: ip + req.url, 
     method: req.method, 
-    key: fs.readFileSync('key.pem'),  // key and cert has to be the same as that under `../nodefrontend/system_test/application/key.pem`
-    cert: fs.readFileSync('cert.pem'), 
+    key: fs.readFileSync('../certs/key.pem'), 
+    cert: fs.readFileSync('../certs/cert.pem'), 
     passphrase: "passphrase",
-    ca: [ fs.readFileSync('../nodefrontend/cert.pem') ],
+    ca: [ fs.readFileSync('../certs/cert.pem') ],
     qs: req.query
   }; 
   req.pipe(request(options)).pipe(res);
@@ -64,14 +64,14 @@ app.all('*', function(req, res) {
  */
 
 var options = { 
-    key: fs.readFileSync('key.pem'), 
-    cert: fs.readFileSync('cert.pem'), 
+    key: fs.readFileSync('../certs/key.pem'), 
+    cert: fs.readFileSync('../certs/cert.pem'), 
     passphrase: "passphrase",
     requestCert: true, 
     rejectUnauthorized: true,
     ca: [ 
       // fs.readFileSync('../nodefrontend/system_test/application/cert.pem'),
-      fs.readFileSync('cert.pem')
+      fs.readFileSync('../certs/cert.pem')
     ], 
 }; 
 var server = https.createServer(options, app);
