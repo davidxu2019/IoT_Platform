@@ -25,17 +25,6 @@ router.get('/', function(req,res) {
     });
 });
 
-router.post('/forward', function(req, res) {
-    console.log("received");
-    let postData = JSON.stringify({
-       "msg": req.body.msg
-    });
-    forwardRequestForInfo(req.query.deviceId, postData)
-    .then(function(msg) {
-        res.send(JSON.stringify(msg));
-    });
-});
-
 /*
 Helper functions
 */
@@ -71,24 +60,6 @@ function sendPublicKeyToDevice(buffer, deviceId) {
         agent: new https.Agent({ 
             maxCachedSessions: 0
         }),
-    }; 
-    return httpsRequest.sendRequest(options, postData);
-}
-
-function forwardRequestForInfo(deviceId, postData) {
-    let options = { 
-        hostname: getIp(deviceId),
-        port: 4444, 
-        path: '/info', 
-        method: 'POST', 
-        key: fs.readFileSync('key.pem'), 
-        cert: fs.readFileSync('cert.pem'), 
-        passphrase: "passphrase",
-        ca: [ fs.readFileSync('../device/cert.pem') ],
-        headers: {
-           'Content-Type': 'application/json',
-           'Content-Length': postData.length
-        },
     }; 
     return httpsRequest.sendRequest(options, postData);
 }
