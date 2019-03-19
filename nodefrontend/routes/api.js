@@ -77,11 +77,13 @@ router.get('/:username', function(req, res, next) {
 
     let dbo = req.db;
     let query = {"username": username};
-    dbo.collection("Bindings").find(query, function (err, devices) {
+    dbo.collection("Bindings").find(query).toArray(function(err, devices) {
         assert.equal(null, err);
         console.log("below are the query results for \"username\"")
         console.log(devices);
-        res.status(200).json(devices);
+        res.status(200).json({
+	    devices: devices
+	});
     });
 });
 
