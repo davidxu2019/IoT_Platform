@@ -18,9 +18,9 @@ var slaves = [];
 send heartbeats to all slaves
 */
 
-// setInterval(function() {
-// 	heartbeat.broadcastHeartBeats(slaves);
-// }, 5*1000);
+setInterval(function() {
+ 	heartbeat.broadcastHeartBeats(slaves);
+}, 5*1000);
 
 /**
 routes
