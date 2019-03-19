@@ -18,7 +18,7 @@ router.get('/', function(req,res) {
     let deviceId = req.query.id;
     getPublicKeyInPemPromise(req)
     .then(function(buffer) {
-        return sendPublicKeyToDevice(buffer, deviceId);
+        return sendPublicKeyToDevice(buffer, deviceId, req.db);
     })
     .then(function(msg) { 
         res.send(JSON.stringify(msg));
@@ -36,15 +36,19 @@ function getPublicKeyInPemPromise(req) {
 }
 
 // todo: implement this method
-function getIp(deviceId) {
-    return "localhost";
+async function getIp(db, deviceId) {
+    query = {"deviceID": toDeviceID};
+    let devices = await dbo.collection("Devices").find(query).toArray();
+    if (devices && devices.length > 0) {
+        return devices[0].IP;
+    }
 }
 
-function sendPublicKeyToDevice(buffer, deviceId) {
+function sendPublicKeyToDevice(buffer, deviceId, db) {
     const publicKey = buffer.toString('utf8'); // PEM encoded public key safe to use now
     let postData = JSON.stringify({'msg': publicKey});
     let options = { 
-        hostname: getIp(deviceId),
+        hostname: getIp(db, deviceId),
         port: 4444, 
         path: '/exchangePublicKey', 
         method: 'POST', 
