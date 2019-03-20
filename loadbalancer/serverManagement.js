@@ -1,13 +1,12 @@
 var HashRing = require('hashring');
 
+/**
+TODOs:
+(1) check if url has been added before when addServer is called
+(2) provide retry functions. (the chosen slave server can go down, so we need provide multiple slaves)
+*/
+
 var ring = new HashRing({
-	// 'localhost:8433': { vnodes: 50 },
- //  '127.0.0.1:8433': { vnodes: 50 },
- //  '127.0.0.2:8433': { vnodes: 50 },
- //  '127.0.0.3:8433': { vnodes: 50 },
- //  '127.0.0.4:8433': { vnodes: 50 },
- //  '127.0.0.5:8433': { vnodes: 50 },
- //  '127.0.0.6:8433': { vnodes: 50 }
 });
 
 function getServer(req) {

@@ -4,9 +4,16 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var request = require('request');
+var requestPromise = require('request-promise');
 var serverManagement = require('./serverManagement');
 
 var app = express();
+
+/**
+* Global variables. TODO: change all properties into config files
+*/
+var masterURL = 'https://cs219master.dynu.net:5433';
+var masterQuerySlaveRoute = '/';
 
 /**
  * Get port from environment and store in Express.
@@ -78,12 +85,11 @@ var options = {
     requestCert: true, 
     rejectUnauthorized: true,
     ca: [ 
-      // fs.readFileSync('../nodefrontend/system_test/application/cert.pem'),
       fs.readFileSync('../certs/cert.pem')
     ], 
 }; 
 var server = https.createServer(options, app);
-server.listen(port);
+server.listen(port, getSlaveServers);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -91,6 +97,28 @@ server.listen(port);
 
 server.on('error', onError);
 server.on('listening', onListening);
+
+
+async function getSlaveServers() {
+  let options = { 
+    url: masterURL + masterQuerySlaveRoute,
+    method: 'GET', 
+    key: fs.readFileSync('../certs/key.pem'), 
+    cert: fs.readFileSync('../certs/cert.pem'), 
+    passphrase: "passphrase",
+    ca: [ fs.readFileSync('../certs/cert.pem') ],
+  }; 
+  try {
+    let body = await requestPromise(options);
+    let slaves = await JSON.parse(body).slaves
+    slaves.forEach(function(slave) {
+      serverManagement.addServer(slave);
+      console.log('Added slave server ' + slave + ' into hash ring');
+    })
+  } catch(err) {
+    console.log(err); 
+  }
+}
 
 /**
  * Normalize a port into a number, string, or false.
