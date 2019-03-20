@@ -18,23 +18,28 @@ test singup, login, exchangePublicKey, and forwarding data
 async function testForwardingData() {
     let username = 'testUser';
     let password = 'password';
-    let deviceID = 'deviceID';
+    let deviceID = '1user1';
     try {
         // await signup(username, password);
         let loginData = await login(username, password);
         let jwt = loginData.cookies.jwt;
-        let publicKeyData = await exchangePublicKey();
-        fs.writeFileSync("devicePublicKey.pem", publicKeyData.body.publicKey);
-        let data = await sendQuery(jwt, username, deviceID, "GOOD!");
-        return data;
+        let publicKeyData = await exchangePublicKey(jwt, deviceID);
+        if (publicKeyData) {
+            fs.writeFileSync("devicePublicKey.pem", publicKeyData.body.publicKey);
+            let data = await sendQuery(jwt, username, deviceID, "GOOD!");
+            return data;            
+        } 
     } catch(err) {
-        console.log(err);
+        throw err;
     }
 }
 
 testForwardingData()
 .then(function(data) {
     console.log(encryptAndDecrypt.decryptStringWithRsaPrivateKey(data.body.mes, 'key.pem'));
+})
+.catch(function(err) {
+    console.log(err);
 })
 
 /*
@@ -85,7 +90,8 @@ function login(username, password) {
     return httpsRequest.sendRequest(options, postData);   
 }
 
-function exchangePublicKey(jwt) {
+function exchangePublicKey(jwt, deviceId) {
+    postData = JSON.stringify({'deviceID': deviceId});
     let options = { 
         hostname: 'localhost', 
         port: 8433, 
@@ -97,9 +103,11 @@ function exchangePublicKey(jwt) {
         ca: [ fs.readFileSync('../../cert.pem') ],
         headers: {
             'Cookie': 'jwt=' + jwt,
+            'Content-Type': 'application/json',
+            'Content-Length': postData.length
         }
     };    
-    return httpsRequest.sendRequest(options);
+    return httpsRequest.sendRequest(options, postData);
 }
 
 function sendQuery(jwt, username, deviceID, command) {
@@ -109,7 +117,7 @@ function sendQuery(jwt, username, deviceID, command) {
     let options = { 
         hostname: 'localhost',
         port: 8433, 
-        path: '/commu/' + username + '/' + deviceID, 
+        path: '/commu/AD/' + username + '/' + deviceID, 
         method: 'POST', 
         key: fs.readFileSync('key.pem'), 
         cert: fs.readFileSync('cert.pem'), 
