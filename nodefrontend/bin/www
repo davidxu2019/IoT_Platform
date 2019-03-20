@@ -17,7 +17,7 @@ var fs = require('fs');
 var port = normalizePort(process.env.PORT || '8433');
 app.set('port', port);
 
-var masterURL = 'https://cs219iotplatform.dynu.net:5433';
+var masterURL = 'https://cs219master.dynu.net:5433';
 var registerToMasterRoute = '/register';
 var highLevelDomain = '.dynu.net';
 var curHostname = process.argv[2];
