@@ -15,18 +15,23 @@ routes
 */
 
 router.get('/', function(req,res) {
-    let deviceId = req.query.id;
-    getPublicKeyInPemPromise(req)
-    .then(function(buffer) {
-        return sendPublicKeyToDevice(buffer, deviceId);
-    })
-    .then(function(msg) { 
-        res.send(JSON.stringify(msg));
-    });
+    handleRequest(req, res);
 });
+
 /*
 Helper functions
 */
+
+async function handleRequest(req, res) {
+    let deviceId = req.body.deviceID;
+    try {
+        let buffer = await getPublicKeyInPemPromise(req);
+        let msg = await sendPublicKeyToDevice(buffer, deviceId, req.db); // msg is a json object
+        res.json(msg);
+    } catch(err) {
+        res.status(422).json({'error': err.message});
+    }    
+}
 
 function getPublicKeyInPemPromise(req) {
     let rawDer = req.connection.getPeerCertificate().raw;
@@ -34,9 +39,14 @@ function getPublicKeyInPemPromise(req) {
     return func('x509', rawDer, { inform: 'der', outform: 'pem' });
 }
 
-// todo: implement this method
-function getIp(deviceId) {
-    return "localhost";
+async function getIp(db, deviceId) {
+    query = {"deviceID": deviceId};
+    let devices = await db.collection("Devices").find(query).toArray();
+    if (devices && devices.length > 0) {
+        return devices[0].IP;
+    } else {
+        throw new Error("Not such device exists");
+    }
 }
 
 function sendPublicKeyToDevice(buffer, deviceId) {
