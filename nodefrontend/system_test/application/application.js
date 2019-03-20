@@ -18,23 +18,28 @@ test singup, login, exchangePublicKey, and forwarding data
 async function testForwardingData() {
     let username = 'testUser';
     let password = 'password';
-    let deviceID = 'deviceID';
+    let deviceID = '1user1';
     try {
         // await signup(username, password);
         let loginData = await login(username, password);
         let jwt = loginData.cookies.jwt;
-        let publicKeyData = await exchangePublicKey();
-        fs.writeFileSync("devicePublicKey.pem", publicKeyData.body.publicKey);
-        let data = await sendQuery(jwt, username, deviceID, "GOOD!");
-        return data;
+        let publicKeyData = await exchangePublicKey(jwt, deviceID);
+        if (publicKeyData) {
+            fs.writeFileSync("devicePublicKey.pem", publicKeyData.body.publicKey);
+            let data = await sendQuery(jwt, username, deviceID, "GOOD!");
+            return data;            
+        } 
     } catch(err) {
-        console.log(err);
+        throw err;
     }
 }
 
 testForwardingData()
 .then(function(data) {
-    console.log(encryptAndDecrypt.decryptStringWithRsaPrivateKey(data.body.mes, '../../../certs/key.pem'));
+    console.log(encryptAndDecrypt.decryptStringWithRsaPrivateKey(data.body.mes, 'key.pem'));
+})
+.catch(function(err) {
+    console.log(err);
 })
 
 /*
