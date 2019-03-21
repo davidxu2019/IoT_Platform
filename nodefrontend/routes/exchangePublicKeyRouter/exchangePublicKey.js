@@ -23,12 +23,13 @@ Helper functions
 */
 
 async function handleRequest(req, res) {
-    let deviceId = req.params.deivceID;
+    let deviceId = req.params.deviceID;
     try {
         let buffer = await getPublicKeyInPemPromise(req);
         let msg = await sendPublicKeyToDevice(buffer, deviceId, req.db); // msg is a json object
         res.json(msg);
     } catch(err) {
+        console.log(err);
         res.status(422).json({'error': err.message});
     }    
 }
@@ -43,17 +44,21 @@ async function getIp(db, deviceId) {
     query = {"deviceID": deviceId};
     let devices = await db.collection("Devices").find(query).toArray();
     if (devices && devices.length > 0) {
+        console.log("=========");
+        console.log(devices[0].IP);
+        console.log(typeof(devices[0].IP));
+        console.log("=========");
         return devices[0].IP;
     } else {
         throw new Error("Not such device exists");
     }
 }
 
-function sendPublicKeyToDevice(buffer, deviceId) {
+async function sendPublicKeyToDevice(buffer, deviceId, db) {
     const publicKey = buffer.toString('utf8'); // PEM encoded public key safe to use now
     let postData = JSON.stringify({'msg': publicKey});
     let options = { 
-        hostname: getIp(deviceId),
+        hostname: await getIp(db, deviceId),
         port: 4444, 
         path: '/exchangePublicKey', 
         method: 'POST', 
