@@ -81,7 +81,7 @@ router.get('/:username', function(req, res, next) {
         assert.equal(null, err);
         console.log("below are the query results for \"username\"")
         console.log(devices);
-        res.status(200).json(devices);
+        res.status(200).json({'devices': devices});
     });
 });
 
