@@ -14,7 +14,7 @@ router.use(bodyParser.json());
 routes
 */
 
-router.get('/', function(req,res) {
+router.get('/:deviceID', function(req,res) {
     handleRequest(req, res);
 });
 
@@ -23,7 +23,7 @@ Helper functions
 */
 
 async function handleRequest(req, res) {
-    let deviceId = req.body.deviceID;
+    let deviceId = req.params.deviceID;
     try {
         let buffer = await getPublicKeyInPemPromise(req);
         let msg = await sendPublicKeyToDevice(buffer, deviceId, req.db); // msg is a json object
